@@ -1,30 +1,30 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "AWS CloudFormation Sample Template LAMP_Multi_AZ: Create a highly available, scalable LAMP stack with an Amazon RDS database instance for the backend data store. This template demonstrates using the AWS CloudFormation bootstrap scripts to install the packages and files necessary to deploy the Apache web server and PHP at instance launch time. **WARNING** This template creates one or more Amazon EC2 instances, an Application Load Balancer and an Amazon RDS DB instance. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Description": "AWS CloudFormation Template that creates a launch template, Auto Scaling group, and an Application Load Balancer.",
     "Parameters": {
         "NetworkStackName": {
-        "Description": "Name of an active CloudFormation stack that contains the networking resources, such as the subnet and security group, that will be used in this stack.",
+        "Description": "Name of an active CloudFormation stack that contains the networking resources that will be used in this stack.",
         "Type": "String",
           "MinLength" : 1,
          "MaxLength" : 255,
         "AllowedPattern" : "^[a-zA-Z][-a-zA-Z0-9]*$",
-        "Default" : "SampleNetworkCrossStack"
+        "Default" : "NetworkStack"
      },       
         "KeyName": {
             "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
             "Type": "AWS::EC2::KeyPair::KeyName",
             "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
         },
-        "WebServerCapacity": {
+        "WebserverCapacity": {
             "Default": "2",
-            "Description": "The initial nuber of WebServer instances",
+            "Description": "The initial nuber of Webserver instances",
             "Type": "Number",
             "MinValue": "1",
             "MaxValue": "5",
             "ConstraintDescription": "must be between 1 and 5 EC2 instances."
         },
         "InstanceType": {
-            "Description": "WebServer EC2 instance type",
+            "Description": "Webserver EC2 instance type",
             "Type": "String",
             "Default": "t2.small",
             "AllowedValues": [
@@ -560,6 +560,10 @@
                 "UnhealthyThresholdCount": 5,
                 "VpcId": { "Fn::ImportValue" :  {"Fn::Sub": "${NetworkStackName}-VPCID" } },
                 "TargetGroupAttributes": [
+                   {
+                       "Key": "deregistration_delay.timeout_seconds",
+                       "Value": "20"
+                    },
                     {
                         "Key": "stickiness.enabled",
                         "Value": "true"
@@ -580,20 +584,51 @@
                 }
             }
         },
-        "WebServerGroup": {
+        "InstanceRole": {
+            "Type": "AWS::IAM::Role",           
+            "Properties": {
+               "RoleName": "InstanceRole",
+               "AssumeRolePolicyDocument": {
+                  "Version" : "2012-10-17",
+                  "Statement": [ {
+                     "Effect": "Allow",
+                     "Principal": {
+                        "Service": [ "ec2.amazonaws.com" ]
+                     },
+                     "Action": [ "sts:AssumeRole" ]
+                  } ]
+               },
+               "Path": "/",
+               "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM",
+                                      "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+                                ]
+               }
+        },
+        "InstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",            
+            "Properties": {
+               "InstanceProfileName": "InstanceProfile",
+               "Path": "/",
+               "Roles": [ {
+                  "Ref": "InstanceRole"
+               } ]
+            }
+        },
+        "WebserverGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
                 "VPCZoneIdentifier": [
                     { "Fn::ImportValue" : {"Fn::Sub": "${NetworkStackName}-SubnetAID" } },
                     { "Fn::ImportValue" : {"Fn::Sub": "${NetworkStackName}-SubnetBID" } }
                 ],
-                "LaunchConfigurationName": {
-                    "Ref": "LaunchTemplate"
-                },
+                "LaunchTemplate": {
+                    "LaunchTemplateId" : { "Ref": "WebserverLaunchTemplate" },
+                    "Version" : "1"
+                  },
                 "MinSize": "1",
                 "MaxSize": "5",
                 "DesiredCapacity": {
-                    "Ref": "WebServerCapacity"
+                    "Ref": "WebserverCapacity"
                 },
                 "TargetGroupARNs": [
                     {
@@ -603,9 +638,9 @@
             },
             "CreationPolicy": {
                 "ResourceSignal": {
-                    "Timeout": "PT5M",
+                    "Timeout": "PT10M",
                     "Count": {
-                        "Ref": "WebServerCapacity"
+                        "Ref": "WebserverCapacity"
                     }
                 }
             },
@@ -623,7 +658,7 @@
                 }
             }
         },
-        "LaunchTemplate": {
+        "WebserverLaunchTemplate": {
             "Type": "AWS::EC2::LaunchTemplate",
             "Metadata": {
                 "Comment1": "Configure the bootstrap helpers to install the Apache Web Server and PHP",
@@ -632,49 +667,59 @@
                     "id": "0afd2be1-e0c5-4142-8b0c-d50313683f4b"
                 }
             },
-            "Properties": {
-                "ImageId": {
-                    "Fn::FindInMap": [
-                        "AWSRegionArch2AMI",
+            "Properties": {                
+                "LaunchTemplateData": {
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "AWSRegionArch2AMI",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            {
+                                "Fn::FindInMap": [
+                                    "AWSInstanceType2Arch",
+                                    {
+                                        "Ref": "InstanceType"
+                                    },
+                                    "Arch"
+                                ]
+                            }
+                        ]
+                    },
+                    "IamInstanceProfile" : {
+                        "Arn" : { "Fn::GetAtt": [
+                            "InstanceProfile",
+                            "Arn"
+                        ] }
+                      },
+                    "InstanceType": {
+                        "Ref": "InstanceType"
+                    },
+                    "SecurityGroupIds": [
                         {
-                            "Ref": "AWS::Region"
-                        },
-                        {
-                            "Fn::FindInMap": [
-                                "AWSInstanceType2Arch",
-                                {
-                                    "Ref": "InstanceType"
-                                },
-                                "Arch"
+                            "Ref": "WebserverSecurityGroup"
+                        }
+                    ],
+                    "KeyName": {
+                        "Ref": "KeyName"
+                    },
+                    "UserData": {
+                        "Fn::Base64": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "#!/bin/bash\n",                                
+                                    "sudo yum -y update\n",
+                                    "sudo yum -y install aws-cfn-bootstrap\n",
+                                    "/opt/aws/bin/cfn-signal -e 0 --stack ", { "Ref": "AWS::StackName" }," --resource WebserverGroup"
+                                ]
                             ]
                         }
-                    ]
-                },
-                "InstanceType": {
-                    "Ref": "InstanceType"
-                },
-                "SecurityGroups": [
-                    {
-                        "Ref": "WebServerSecurityGroup"
-                    }
-                ],
-                "KeyName": {
-                    "Ref": "KeyName"
-                },
-                "UserData": {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "#!/bin/bash\n",
-                                "sudo yum -y update\n"
-                            ]
-                        ]
                     }
                 }
-            }
+            }            
         },
-        "WebServerSecurityGroup": {
+        "WebserverSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "GroupDescription": "Enable HTTP access via port 80 locked down to the ELB and SSH access",
@@ -717,7 +762,7 @@
     },
     "Outputs": {
         "WebsiteURL": {
-            "Description": "URL for newly created LAMP stack",
+            "Description": "URL for ALB",
             "Value": {
                 "Fn::Join": [
                     "",
