@@ -1,25 +1,20 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "AWS CloudFormation Sample Template VPC_with_PublicIPs_And_DNS: Sample template that creates a VPC with DNS and public IPs enabled. Note that you are billed for the AWS resources that you use when you create a stack from this template.",
+    "Description": "AWS CloudFormation Sample Template that creates a VPC with DNS and public IPs enabled and two public subnets. Exports VPC and public subnet IDs.",
     "Resources": {
-        "VPC": {
+        "PublicVPC": {
             "Type": "AWS::EC2::VPC",
             "Properties": {
                 "EnableDnsSupport": "true",
                 "EnableDnsHostnames": "true",
                 "CidrBlock": "10.0.0.0/16"
-            },
-            "Metadata": {
-                "AWS::CloudFormation::Designer": {
-                    "id": "56963025-3d5c-4e25-a1db-d31fe5963b2a"
-                }
             }
         },
         "PublicSubnetA": {
             "Type": "AWS::EC2::Subnet",
             "Properties": {
                 "VpcId": {
-                    "Ref": "VPC"
+                    "Ref": "PublicVPC"
                 },
                 "CidrBlock": "10.0.1.0/24",
                 "AvailabilityZone" : "us-east-1a",
@@ -31,7 +26,7 @@
             "Type": "AWS::EC2::Subnet",
             "Properties": {
                 "VpcId": {
-                    "Ref": "VPC"
+                    "Ref": "PublicVPC"
                 },
                 "CidrBlock": "10.0.2.0/24",
                 "AvailabilityZone" : "us-east-1b",
@@ -51,15 +46,10 @@
             "Type": "AWS::EC2::VPCGatewayAttachment",
             "Properties": {
                 "VpcId": {
-                    "Ref": "VPC"
+                    "Ref": "PublicVPC"
                 },
                 "InternetGatewayId": {
                     "Ref": "InternetGateway"
-                }
-            },
-            "Metadata": {
-                "AWS::CloudFormation::Designer": {
-                    "id": "2cd316ac-1300-42c0-84e1-c869c7e5bb70"
                 }
             }
         },
@@ -67,12 +57,7 @@
             "Type": "AWS::EC2::RouteTable",
             "Properties": {
                 "VpcId": {
-                    "Ref": "VPC"
-                }
-            },
-            "Metadata": {
-                "AWS::CloudFormation::Designer": {
-                    "id": "67d9b491-a82d-47ea-a68c-f3008de25c74"
+                    "Ref": "PublicVPC"
                 }
             }
         },
@@ -86,11 +71,6 @@
                 "DestinationCidrBlock": "0.0.0.0/0",
                 "GatewayId": {
                     "Ref": "InternetGateway"
-                }
-            },
-            "Metadata": {
-                "AWS::CloudFormation::Designer": {
-                    "id": "35427f61-d425-4d59-83e6-8626a1776945"
                 }
             }
         },
@@ -135,7 +115,7 @@
         "VPCId": {
             "Description": "VPC ID",
             "Value": {
-                "Ref": "VPC"
+                "Ref": "PublicVPC"
             },
             "Export": {
                 "Name": {
@@ -162,109 +142,6 @@
             "Export": {
                 "Name": {
                     "Fn::Sub": "${AWS::StackName}-SubnetBID"
-                }
-            }
-        }
-    },
-    "Metadata": {
-        "AWS::CloudFormation::Designer": {
-            "67fd98e3-5cae-4c59-a9ca-1ca1763edd39": {
-                "size": {
-                    "width": 60,
-                    "height": 60
-                },
-                "position": {
-                    "x": 60,
-                    "y": 660
-                },
-                "z": 1,
-                "embeds": []
-            },
-            "56963025-3d5c-4e25-a1db-d31fe5963b2a": {
-                "size": {
-                    "width": 600,
-                    "height": 510
-                },
-                "position": {
-                    "x": 60,
-                    "y": 90
-                },
-                "z": 1,
-                "embeds": [
-                    "67d9b491-a82d-47ea-a68c-f3008de25c74",
-                    "6cc94d7a-89db-4b7e-ad3c-e1a34b437ad1"
-                ]
-            },
-            "67d9b491-a82d-47ea-a68c-f3008de25c74": {
-                "size": {
-                    "width": 240,
-                    "height": 240
-                },
-                "position": {
-                    "x": 90,
-                    "y": 150
-                },
-                "z": 2,
-                "parent": "56963025-3d5c-4e25-a1db-d31fe5963b2a",
-                "embeds": [
-                    "35427f61-d425-4d59-83e6-8626a1776945"
-                ],
-                "iscontainedinside": [
-                    "56963025-3d5c-4e25-a1db-d31fe5963b2a"
-                ]
-            },
-            "2cd316ac-1300-42c0-84e1-c869c7e5bb70": {
-                "source": {
-                    "id": "56963025-3d5c-4e25-a1db-d31fe5963b2a"
-                },
-                "target": {
-                    "id": "67fd98e3-5cae-4c59-a9ca-1ca1763edd39"
-                }
-            },
-            "35427f61-d425-4d59-83e6-8626a1776945": {
-                "size": {
-                    "width": 60,
-                    "height": 60
-                },
-                "position": {
-                    "x": 120,
-                    "y": 210
-                },
-                "z": 3,
-                "parent": "67d9b491-a82d-47ea-a68c-f3008de25c74",
-                "embeds": [],
-                "isassociatedwith": [
-                    "67fd98e3-5cae-4c59-a9ca-1ca1763edd39"
-                ],
-                "iscontainedinside": [
-                    "67d9b491-a82d-47ea-a68c-f3008de25c74"
-                ],
-                "dependson": [
-                    "2cd316ac-1300-42c0-84e1-c869c7e5bb70"
-                ]
-            },
-            "6cc94d7a-89db-4b7e-ad3c-e1a34b437ad1": {
-                "size": {
-                    "width": 150,
-                    "height": 150
-                },
-                "position": {
-                    "x": 390,
-                    "y": 150
-                },
-                "z": 2,
-                "parent": "56963025-3d5c-4e25-a1db-d31fe5963b2a",
-                "embeds": [],
-                "iscontainedinside": [
-                    "56963025-3d5c-4e25-a1db-d31fe5963b2a"
-                ]
-            },
-            "c1fed60b-0d90-4ac2-8801-a4076efb5f57": {
-                "source": {
-                    "id": "67d9b491-a82d-47ea-a68c-f3008de25c74"
-                },
-                "target": {
-                    "id": "6cc94d7a-89db-4b7e-ad3c-e1a34b437ad1"
                 }
             }
         }
