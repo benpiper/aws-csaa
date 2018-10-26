@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "AWS CloudFormation Template that creates a launch template, Auto Scaling group, and an Application Load Balancer.",
+    "Description": "AWS CloudFormation Template that creates a launch template, Auto Scaling group, and an Application Load Balancer. Requires network stack name as a parameter.",
     "Parameters": {
         "NetworkStackName": {
         "Description": "Name of an active CloudFormation stack that contains the networking resources that will be used in this stack.",
