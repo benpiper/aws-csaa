@@ -1,0 +1,134 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS CloudFormation Sample Template that creates a VPC with DNS and public IPs enabled and two public subnets. Exports VPC and public subnet IDs.",
+    "Resources": {
+        "PublicVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true",
+                "CidrBlock": "10.0.0.0/16"
+            }
+        },
+        "PublicSubnetA": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "PublicVPC"
+                },
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone" : "us-east-1a",
+                "MapPublicIpOnLaunch" : true,
+                "Tags" : [ { "Key" : "Name", "Value" : "SubnetA" } ]
+            }
+        },
+        "PublicSubnetB": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "PublicVPC"
+                },
+                "CidrBlock": "10.0.2.0/24",
+                "AvailabilityZone" : "us-east-1b",
+                "MapPublicIpOnLaunch" : true,
+                "Tags" : [ { "Key" : "Name", "Value" : "SubnetB" } ]
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "67fd98e3-5cae-4c59-a9ca-1ca1763edd39"
+                }
+            }
+        },
+        "VPCGatewayAttachment": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "PublicVPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "PublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "PublicVPC"
+                }
+            }
+        },
+        "PublicRoute": {
+            "Type": "AWS::EC2::Route",
+            "DependsOn": "VPCGatewayAttachment",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "PublicSubnetARouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnetA"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                }
+            }
+        },
+        "PublicSubnetBRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnetB"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                }
+            }
+        },
+        "PublicSubnetNetworkAclAssociation": {
+            "Type": "AWS::EC2::SubnetNetworkAclAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnetA"
+                },
+                "NetworkAclId": {
+                    "Fn::GetAtt": [
+                        "PublicVPC",
+                        "DefaultNetworkAcl"
+                    ]
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "VPCID": {
+            "Description": "VPC ID",
+            "Value": {
+                "Ref": "PublicVPC"
+            }
+        },
+        "PublicSubnetAID": {
+            "Description": "The subnet A ID to use for public web servers",
+            "Value": {
+                "Ref": "PublicSubnetA"
+            }
+        },
+        "PublicSubnetBID": {
+            "Description": "The subnet B ID to use for public web servers",
+            "Value": {
+                "Ref": "PublicSubnetB"
+            }
+        }
+    }
+}
