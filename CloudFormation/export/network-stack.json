@@ -112,7 +112,7 @@
         }
     },
     "Outputs": {
-        "VPCId": {
+        "VPCID": {
             "Description": "VPC ID",
             "Value": {
                 "Ref": "PublicVPC"
