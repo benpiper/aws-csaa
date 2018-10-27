@@ -104,7 +104,7 @@
                 },
                 "NetworkAclId": {
                     "Fn::GetAtt": [
-                        "VPC",
+                        "PublicVPC",
                         "DefaultNetworkAcl"
                     ]
                 }
