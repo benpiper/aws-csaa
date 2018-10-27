@@ -552,13 +552,13 @@
         "ALBTargetGroup": {
             "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
             "Properties": {
+                "VpcId": { "Fn::ImportValue" :  {"Fn::Sub": "${NetworkStackName}-VPCID" } },
                 "HealthCheckIntervalSeconds": 10,
                 "HealthCheckTimeoutSeconds": 5,
                 "HealthyThresholdCount": 2,
                 "Port": 80,
                 "Protocol": "HTTP",
                 "UnhealthyThresholdCount": 5,
-                "VpcId": { "Fn::ImportValue" :  {"Fn::Sub": "${NetworkStackName}-VPCID" } },
                 "TargetGroupAttributes": [
                    {
                        "Key": "deregistration_delay.timeout_seconds",
