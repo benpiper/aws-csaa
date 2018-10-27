@@ -507,8 +507,7 @@
         "NetworkStack" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
-               "TemplateURL" : "https://s3.amazonaws.com/cf-templates-c23z8b2vpmbb-us-east-1/network-stack.json",
-               "TimeoutInMinutes" : "60"
+               "TemplateURL" : "https://s3.amazonaws.com/cf-templates-c23z8b2vpmbb-us-east-1/network-stack.json"
             }
          },
         "ApplicationLoadBalancer": {
