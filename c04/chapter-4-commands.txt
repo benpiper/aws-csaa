@@ -1,0 +1,7 @@
+aws ec2 create-vpc —--cidr-block 172.16.0.0/16
+
+aws ec2 describe-vpcs --vpc-ids vpc-0d19e8153b4d142ed
+
+aws ec2 create-subnet --vpc-id vpc-0d19e8153b4d142ed --cidr-block 172.16.100.0/24 --availability-zone us-east-1a
+
+aws ec2 describe-subnets --subnet-ids subnet-0e398e93c154e8757
