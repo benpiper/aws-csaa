@@ -5,3 +5,37 @@ aws ec2 describe-vpcs --vpc-ids vpc-0d19e8153b4d142ed
 aws ec2 create-subnet --vpc-id vpc-0d19e8153b4d142ed --cidr-block 172.16.100.0/24 --availability-zone us-east-1a
 
 aws ec2 describe-subnets --subnet-ids subnet-0e398e93c154e8757
+
+aws ec2 create-network-interface --private-ip-address 172.16.100.99 --subnet-id subnet-0e398e93c154e8757
+
+aws ec2 describe-network-interfaces --network-interface-ids eni-0863f88f670e8ea06
+
+aws ec2 create-internet-gateway
+
+aws ec2 attach-internet-gateway --internet-gateway-id igw-0312f81aa1ef24715 --vpc-id vpc-0d19e8153b4d142ed
+
+aws ec2 describe-route-tables --filters Name=vpc-id,Values=vpc-0d19e8153b4d142ed
+
+aws ec2 create-route --route-table-id rtb-097d8be97649e0584 --destination-cidr-block "0.0.0.0/0" --gateway-id igw-0312f81aa1ef24715
+
+aws ec2 create-security-group --group-name "web-ssh" --description "Web and SSH traffic" --vpc-id vpc-0d19e8153b4d142ed
+
+aws ec2 authorize-security-group-ingress --group-id sg-0f076306080ac2c91 --protocol "tcp" --cidr "0.0.0.0/0" --port "22"
+
+aws ec2 authorize-security-group-ingress --group-id sg-0f076306080ac2c91 --protocol "tcp" --cidr "0.0.0.0/0" --port "80"
+
+aws ec2 authorize-security-group-ingress --group-id sg-0f076306080ac2c91 --protocol "tcp" --cidr "0.0.0.0/0" --port "443"
+
+aws ec2 describe-security-groups --group-id sg-0f076306080ac2c91
+
+aws ec2 create-network-acl --vpc-id vpc-0d19e8153b4d142ed
+
+aws ec2 create-network-acl-entry --ingress --cidr-block "0.0.0.0/0" --protocol "tcp" --port-range "From=22,To=22" --rule-action "allow" --network-acl-id "acl-052f05f358d96cfb3" --rule-number 70
+
+aws ec2 create-network-acl-entry --ingress --cidr-block "0.0.0.0/0" --protocol "tcp" --port-range "From=3389,To=3389" --rule-action "allow" --network-acl-id "acl-052f05f358d96cfb3" --rule-number 80
+
+aws ec2 describe-network-acls --network-acl-id "acl-052f05f358d96cfb3"
+
+aws ec2 allocate-address
+
+aws ec2 associate-address --allocation-id eipalloc-0e14547dac92e8a75 --network-interface-id eni-0863f88f670e8ea06
