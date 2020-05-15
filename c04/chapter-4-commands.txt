@@ -39,3 +39,31 @@ aws ec2 describe-network-acls --network-acl-id "acl-052f05f358d96cfb3"
 aws ec2 allocate-address
 
 aws ec2 associate-address --allocation-id eipalloc-0e14547dac92e8a75 --network-interface-id eni-0863f88f670e8ea06
+
+# Exercise 4.8
+
+aws ec2 create-vpc --cidr-block 172.17.0.0/16
+
+aws ec2 create-subnet --vpc-id vpc-08edadb7e52eedd37 --cidr-block 172.17.100.0/24 --availability-zone us-east-1b
+
+aws ec2 create-transit-gateway
+
+aws ec2 create-transit-gateway-vpc-attachment --transit-gateway-id "tgw-0fe8e470174ca0be8" --vpc-id "vpc-0d19e8153b4d142ed" --subnet-ids "subnet-0e398e93c154e8757"
+
+aws ec2 create-transit-gateway-vpc-attachment --transit-gateway-id "tgw-0fe8e470174ca0be8" --vpc-id "vpc-08edadb7e52eedd37" --subnet-ids "subnet-08cce691ef4bfae40"
+
+aws ec2 search-transit-gateway-routes --transit-gateway-route-table-id tgw-rtb-01e158d45848e8522 --filters "Name=type,Values=static,propagated"
+
+aws ec2 create-route --route-table-id rtb-097d8be97649e0584 --destination-cidr-block "172.17.0.0/16" --transit-gateway-id tgw-0fe8e470174ca0be8
+
+aws ec2 create-route --route-table-id rtb-01bbf401d3b503764 --destination-cidr-block "172.16.0.0/16" --transit-gateway-id tgw-0fe8e470174ca0be8
+
+aws ec2 describe-route-tables --filters Name=route.transit-gateway-id,Values=tgw-0fe8e470174ca0be8
+
+aws ec2 create-transit-gateway-route --destination-cidr-block 172.16.100.64/29 --transit-gateway-route-table-id tgw-rtb-01e158d45848e8522 --blackhole
+
+aws ec2 delete-transit-gateway-vpc-attachment --transit-gateway-attachment-id tgw-attach-0421300408cf0a63b
+
+aws ec2 delete-transit-gateway-vpc-attachment --transit-gateway-attachment-id tgw-attach-07cfbfa14a60cbce2
+
+aws ec2 delete-transit-gateway --transit-gateway-id tgw-0fe8e470174ca0be8
