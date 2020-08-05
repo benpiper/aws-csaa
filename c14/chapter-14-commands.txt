@@ -1,5 +1,22 @@
+# Examples
 aws cloudformation create-stack --stack-name Network --template-url https://s3.amazonaws.com/cf-templates-c23z8b2vpmbb-us-east-1/network-stack.json
 
 aws cloudformation create-stack --stack-name Network --template-body file://network-stack.json
 
 aws cloudformation delete-stack --stack-name Network
+
+# Exercise 14.1
+aws cloudformation create-stack --stack-name web-stack --template-url [URL of the web-stack.json template]  --parameters Parame-terKey=KeyName,ParameterValue=[the name of your SSH keypair] --capabilities CAPABILITY_NAMED_IAM 
+
+aws cloudformation describe-stacks
+
+aws cloudformation delete-stack --stack-name web-stack
+
+# Exercise 14.2
+aws codecommit create-repository --repository-name myrepo
+
+git clone https://git-codecommit.us-east-1.amazonaws.com/v1/repos/myrepo 
+
+git config user.name "Ben Piper"
+git config user.email "ben@benpiper.com"
+
