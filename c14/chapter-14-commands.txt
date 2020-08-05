@@ -1,0 +1,3 @@
+aws cloudformation create-stack --stack-name Network --template-url https://s3.amazonaws.com/cf-templates-c23z8b2vpmbb-us-east-1/network-stack.json
+
+aws cloudformation create-stack --stack-name Network --template-body file://network-stack.json
