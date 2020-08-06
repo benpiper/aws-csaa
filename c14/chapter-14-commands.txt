@@ -18,5 +18,11 @@ aws codecommit create-repository --repository-name myrepo
 git clone https://git-codecommit.us-east-1.amazonaws.com/v1/repos/myrepo 
 
 git config user.name "Ben Piper"
+
 git config user.email "ben@benpiper.com"
 
+git add file.txt
+
+git commit -m "Add file.txt"
+
+git push
